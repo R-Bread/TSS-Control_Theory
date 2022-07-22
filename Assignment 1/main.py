@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
 import Control as c
+import matplotlib.pyplot as plt
 
 # initialising the window. You can ignore this part.
 
@@ -40,6 +41,7 @@ def blit_rot_center(surf, image, topleft, angle):
 
 theta = 0       # the variable stores the angle of the plate with the
                 # horizontal and measured positive counterclockwise.
+                # Is in degrees
 
 phi = 0         # the variable stores the angle of rotation
                 # of the ball about its own axis.
@@ -47,6 +49,19 @@ phi = 0         # the variable stores the angle of rotation
 x = 0           # the variable stores the distance of
                 # the center of the ball form the pivot.
 
+v = 0           # The velocity of the ball
+
+ex = 0          # The error in each variable from the required value.
+ev = 0
+
+Ix = 0          # The value of the integral term for each variable from the controller.
+Iv = 0
+
+X = 400         # Setting defaults for the solve function
+Y = 400
+
+count = 0
+var_list = []
 
 # Game loop
 while run:
@@ -66,7 +81,12 @@ while run:
     # any number of parameters you like and output the new system
     # variables and any other parameter you would like to track.
 
-    dx = c.solve()
+
+    x_prev = x
+    theta,x,v,ex,ev,Ix,Iv = c.solve(theta,x,v,ex,ev,Ix,Iv,X,Y)
+    dx = x-x_prev
+
+    var_list.append([X-400,x,v,theta])
 
     # make sure the ball rotates
     dphi = dx / r
@@ -85,3 +105,10 @@ while run:
     screen.blit(pivot, (centerX - 32, centerY - 32 + plateT))
 
     pygame.display.update()
+    count += 1
+
+# print(count)
+count_list = np.arange(0,count)
+plt.plot(count_list, var_list)
+plt.legend(["X", "x", "v", "theta"])
+plt.show()
